@@ -20,15 +20,12 @@ app.post('/removeData', (req, res) => {
     return res.send('Received a POST HTTP method');
 });
 
-app.listen(port, () =>{
+app.listen(process.env.PORT || 8080, () =>{
     connect_and_list();
     console.log(`Example app listening on port ${port}!`);},
 );
-async function connect_and_list(){
-    var client = await connect();
-    listDatabases(client);
-    await client.close();
-}
+
+
 
 
 
@@ -48,6 +45,11 @@ async function connect(){
 }
 connect().catch(console.error);
 
+async function connect_and_list(){
+    var client = await connect();
+    listDatabases(client);
+    await client.close();
+}
 async function listDatabases(client){
     databasesList = await client.db().admin().listDatabases();
  

@@ -1,43 +1,50 @@
 const MongoClient = require('mongodb').MongoClient;
 const express = require('express');
 var cors = require('cors');
-const port = 3000;
+const port = process.env.PORT || 8080;
 
 const app = express();
 app.use(cors());
+app.use(express.json())
+
 /* REST API Section */
-app.get('/', (req,res) =>{
+app.get('/', (req, res) => {
     return res.send("you got it!");
 });
+//gets all form data
 app.get('/getData', (req, res) => {
-    return res.send('Received a GET HTTP method');
+    console.log(req.body);
+    this.loadData().then(data=> res.send(data));
 });
-
+//saves 1 form entry to entries
 app.post('/saveData', (req, res) => {
-    return res.send('Received a POST HTTP method');
+    console.log(req.body);
+    this.saveData(req.body).then(data=> res.send(data));
 });
+//clears form data
 app.post('/removeData', (req, res) => {
-    return res.send('Received a POST HTTP method');
+    this.removeData().then(data=> res.send(data));
 });
 
-app.listen(process.env.PORT || 8080, () =>{
-    connect_and_list();
-    console.log(`Example app listening on port ${port}!`);},
-);
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}!`);
+});
 
 
 
 
 
 /* DB FUNCTIONS */
-async function connect(){
-   
+//connects to the mongodb
+async function connect() {
     const uri = "mongodb+srv://root:strongpassword@im-backend-rkump.mongodb.net/test?retryWrites=true&w=majority";
     client = new MongoClient(uri);
     try {
         // Connect to the MongoDB cluster
         await client.connect();
-        return client;
+        const db = client.db("swe432-final-db");
+
+        return db, client;
     } catch (e) {
         console.error(e);
         return null;
@@ -45,38 +52,33 @@ async function connect(){
 }
 connect().catch(console.error);
 
-async function connect_and_list(){
-    var client = await connect();
-    listDatabases(client);
-    await client.close();
-}
-async function listDatabases(client){
-    databasesList = await client.db().admin().listDatabases();
- 
-    console.log("Databases:");
-    databasesList.databases.forEach(db => console.log(` - ${db.name}`));
-};
-
-async function saveData(client, data){
-client = connect();
-if(client != null){
-
-    await client.close();
-}
-
-}
-async function loadData(client, data){
-    client = connect();
-
-    if(client != null){
-
-        await client.close();
+//uploads one entry to entries collection in mongodb
+async function saveData(client, data) {
+    var db, client = connect();
+    if (db != null) {
+        db.collection('entries').insertOne({
+            data
+        }).then(async function (result) {
+            await client.close();
+            return (result);
+        })
     }
 }
-async function removeData(client, data){
-    client = connect();
-    if(client != null){
+//loads all data from entries collection, could be made to search for specific strings
+async function loadData(client, data) {
+    var db, client = connect();
 
+    if (db != null) {
+        var cursor = db.collection('entries').find({});
+        await client.close();
+        return cursor;
+    }
+}
+//removes all entries, could be used to remove certain ones later
+async function removeData(client, data) {
+    var db, client = connect();
+    if (db != null) {
+        db.collection('entries').remove({});
         await client.close();
     }
 }

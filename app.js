@@ -6,6 +6,9 @@ const port = 3000;
 const app = express();
 app.use(cors());
 /* REST API Section */
+app.get('/', (req,res) =>{
+    return res.send("you got it!");
+});
 app.get('/getData', (req, res) => {
     return res.send('Received a GET HTTP method');
 });
